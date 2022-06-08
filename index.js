@@ -1,7 +1,7 @@
 import { memory } from "rust-wasm/rust_wasm_bg";
 import { Universe, Cell } from "rust-wasm";
 
-const CELL_SIZE = 15; // px
+const CELL_SIZE = 12; // px
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
@@ -50,8 +50,6 @@ const getIndex = (row, column) => {
 
 const drawCells = () => {
   const cellsPtr = universe.cells();
-
-  // This is updated!
   const cells = new Uint8Array(memory.buffer, cellsPtr, (width * height) / 8);
 
   ctx.beginPath();
@@ -60,7 +58,6 @@ const drawCells = () => {
     for (let col = 0; col < width; col++) {
       const idx = getIndex(row, col);
 
-      // This is updated!
       ctx.fillStyle = bitIsSet(idx, cells) ? ALIVE_COLOR : DEAD_COLOR;
 
       ctx.fillRect(
@@ -76,12 +73,17 @@ const drawCells = () => {
 };
 
 let animationId = null;
+let now;
+let start = Date.now();
+let fps = 5;
+let fpsInterval = 1000 / fps;
 const renderLoop = () => {
-  drawGrid();
-  drawCells();
-
-  universe.tick();
-
+  if (Date.now() - start >= fpsInterval) {
+    universe.tick();
+    drawGrid();
+    drawCells();
+    start = Date.now();
+  }
   animationId = requestAnimationFrame(renderLoop);
 };
 
@@ -106,6 +108,40 @@ playPauseButton.addEventListener("click", (event) => {
   } else {
     pause();
   }
+});
+
+canvas.addEventListener("click", (event) => {
+  const boundingRect = canvas.getBoundingClientRect();
+
+  const scaleX = canvas.width / boundingRect.width;
+  const scaleY = canvas.height / boundingRect.height;
+
+  const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+  const canvasTop = (event.clientY - boundingRect.top) * scaleY;
+
+  const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1);
+  const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1);
+
+  universe.toggle_cell(row, col);
+
+  drawGrid();
+  drawCells();
+});
+
+const checkBox = document.getElementById("throttle");
+checkBox.addEventListener("click", (event) => {
+  if (checkBox.checked == true) {
+    fpsInterval = 1000 / fps;
+  } else {
+    fpsInterval = 0;
+  }
+});
+
+const fpsSlider = document.getElementById("fps-slider");
+fpsSlider.addEventListener("change", (event) => {
+  fps = fpsSlider.value;
+  fpsInterval = 1000 / fps;
+  console.log(`FPS set to : ${fps}`);
 });
 
 drawGrid();

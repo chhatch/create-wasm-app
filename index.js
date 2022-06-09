@@ -1,5 +1,6 @@
 import { memory } from "rust-wasm/rust_wasm_bg";
 import { Universe, Cell } from "rust-wasm";
+import { fps } from "./fpsComponent";
 
 const CELL_SIZE = 12; // px
 const GRID_COLOR = "#CCCCCC";
@@ -75,10 +76,12 @@ const drawCells = () => {
 let animationId = null;
 let now;
 let start = Date.now();
-let fps = 5;
-let fpsInterval = 1000 / fps;
+let fpsSetting = 5;
+let fpsInterval = 1000 / fpsSetting;
+
 const renderLoop = () => {
   if (Date.now() - start >= fpsInterval) {
+    fps.render();
     universe.tick();
     drawGrid();
     drawCells();
@@ -139,10 +142,11 @@ checkBox.addEventListener("click", (event) => {
 
 const fpsSlider = document.getElementById("fps-slider");
 fpsSlider.addEventListener("change", (event) => {
-  fps = fpsSlider.value;
-  fpsInterval = 1000 / fps;
-  console.log(`FPS set to : ${fps}`);
+  fpsSetting = fpsSlider.value;
+  fpsInterval = 1000 / fpsSetting;
+  console.log(`FPS set to : ${fpsSetting}`);
 });
 
 drawGrid();
 drawCells();
+fps.render();

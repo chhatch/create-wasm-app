@@ -2,7 +2,7 @@ import { memory } from "rust-wasm/rust_wasm_bg";
 import { Universe, Cell } from "rust-wasm";
 import { fps } from "./fpsComponent";
 
-const CELL_SIZE = 12; // px
+const CELL_SIZE = 8; // px
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
@@ -76,8 +76,8 @@ const drawCells = () => {
 let animationId = null;
 let now;
 let start = Date.now();
-let fpsSetting = 5;
-let fpsInterval = 1000 / fpsSetting;
+let fpsSetting;
+let fpsInterval = 0;
 
 const renderLoop = () => {
   if (Date.now() - start >= fpsInterval) {
